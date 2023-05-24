@@ -6,12 +6,19 @@ import tkinter as tk
 # Create window
 window = tk.Tk()
 
+canvas_size = 1000
+
 # Create canvas
-canvas = tk.Canvas(window, width = 400, height = 400)
+canvas = tk.Canvas(window, width = window.winfo_screenwidth(), height = window.winfo_screenheight())
 canvas.pack()
 
+center_y = canvas_size // 2
+center_x = canvas_size // 2
+
+window.geometry(f"{canvas_size}x{canvas_size}")
+
 def display_text(text):
-    canvas.create_text(200, 200, text = text, font = ("Arial", 16), fill = "black")
+    canvas.create_text(center_x, center_y, text = text, font = ("Arial", 16), fill = "black")
 
 # Github check
 
@@ -43,8 +50,8 @@ for item in found_items:
         slot = player_inventory.index(None)
         player_inventory[slot] = item
         display_text("Item", {item}, "Added To Slot", {slot+1})
-    else:
-        display_text("Inventory Is Full, Unable To Add Item")
+    # else:
+        # display_text("Inventory Is Full, Unable To Add Item")
 
 # Level logic
 # This is a list use xp_levels[0-9] to get it
@@ -78,9 +85,9 @@ def check_level_up():
             level = lvl
 
 def shop():
-    window_2 = tk.Tk()
+    window_shop = tk.Toplevel(window)
     
-    canvas_shop = tk.Canvas(window_2, width = 400, height = 400)
+    canvas_shop = tk.Canvas(window_shop, width = 400, height = 400)
     canvas_shop.pack()
     
     def shop_text(shp_txt):
@@ -96,11 +103,31 @@ def shop():
     
     if can_fly:
         shop_text("Flight Speed ~ $500")
+        
+    shop_entry = tk.Entry(window_shop)
+    shop_entry.pack()
+    
+    def shop_handle_input(event):
+        game_info_value = shop_entry.get()
+        if game_info_value == "1":
+            window_shop.destroy()
+            window.deiconify()
+            window.focus_force()
+            
+    shop_entry.bind("<Return>", shop_handle_input)
     
 def player_info():
+    window_player_info = tk.Toplevel(window)
+    
+    canvas_player_info = tk.Canvas(window_player_info, width = 400, height = 400)
+    canvas_player_info.pack()
+    
+    def player_info_text(plyr_info_txt):
+         canvas_player_info.create_text(200, 200, text = plyr_info_txt, font = ("Arial", 16), fill = "black")
+    
     global player_inventory
     
-    display_text("Player Stats\n"
+    player_info_text("Player Stats\n"
                  "____________\n\n"
                  "Player Health: " + str(player_health) + "\n"
                  "Attack Speed: " + str(attack_speed) + "\n"
@@ -109,47 +136,67 @@ def player_info():
                  "Current Level: " + str(level))
     
     if can_fly:
-        display_text("Flight Speed: ", flight_speed)
+        player_info_text("Flight Speed: ", flight_speed)
       
-    display_text("Player Inventory: " + ",".join(filtered_inventory))
+    player_info_text("Player Inventory: " + ",".join(filtered_inventory))
         
-    player_info_entry = tk.Entry(window)
+    player_info_entry = tk.Entry(window_player_info)
     player_info_entry.pack()
     
-    def handle_input():
+    def handle_input(event):
         input_value = player_info_entry.get()
         if input_value == "1":
-            window.destroy()
-            main_menu()
+            window_player_info.destroy()
+            window.deiconify()
+            window.focus_force()
+            
             
     player_info_entry.bind("<Return>", handle_input)
     
 def credits():
-    display_text("Developer: StinkyBagel")
+    window_credits = tk.Toplevel(window)
     
-    credits_entry = tk.Entry(window)
+    canvas_credits = tk.Canvas(window_credits, width = 400, height = 400)
+    canvas_credits.pack()
+    
+    def credits_text(credits_txt):
+         canvas_credits.create_text(200, 200, text = credits_txt, font = ("Arial", 16), fill = "black")
+    
+    credits_text("Developer: StinkyBagel")
+    
+    credits_entry = tk.Entry(window_credits)
     credits_entry.pack()
     
-    def credit_handle_input():
+    def credit_handle_input(event):
         credit_input_value = credits_entry.get()
         if credit_input_value == "1":
-            window.destroy()
-            main_menu()
+            window_credits.destroy()
+            window.deiconify()
+            window.focus_force()
     
     credits_entry.bind("<Return>", credit_handle_input)        
             
 def game_info():
-    display_text("The premise of the game is to fight enemies and gain xp and money."
+    window_game_info = tk.Toplevel(window)
+    
+    canvas_game_info = tk.Canvas(window_game_info, width = 400, height = 400)
+    canvas_game_info.pack()
+    
+    def game_info_text(game_info_txt):
+         canvas_game_info.create_text(200, 200, text = game_info_txt, font = ("Arial", 16), fill = "black")
+    
+    game_info_text("The premise of the game is to fight enemies and gain xp and money."
                  "You can use the money to buy upgrades in the shop.")
     
-    game_info_entry = tk.Entry(window)
+    game_info_entry = tk.Entry(window_game_info)
     game_info_entry.pack()
     
-    def game_info_handle_input():
+    def game_info_handle_input(event):
         game_info_value = game_info_entry.get()
         if game_info_value == "1":
-            window.destroy()
-            main_menu()
+            window_game_info.destroy()
+            window.deiconify()
+            window.focus_force()
             
     game_info_entry.bind("<Return>", game_info_handle_input)
 
@@ -165,25 +212,17 @@ def main_menu():
     def main_menu_handle_input(event):
         title_options = main_menu_entry.get()
         if title_options == "1":
-            window.destroy()
+            window.withdraw()
             shop()
         elif title_options == "2":
+            window.withdraw()
             player_info()
         elif title_options == "3":
+            window.withdraw()
             credits()
         elif title_options == "4":
+            window.withdraw()
             game_info()
-        elif title_options == "5":
-            player_health += 5
-            attack_speed += 5
-            inventory_slots += 5
-            money += 5
-            xp += 51200
-            debug_found_item = found_items[:2]
-            add_item_to_inventory(debug_found_item[0])
-            add_item_to_inventory(debug_found_item[1])
-            check_level_up()
-            player_info()
     
     title_label = tk.Label(window, text = ("   _____ _                          _               _____ _           _     \n"
  "  / ____| |                        | |             / ____| |         | |    \n"
@@ -191,13 +230,13 @@ def main_menu():
  " | |    | '_ \ / _` | '__/ _` |/ __| __/ _ \ '__| | |    | |/ _` / __| '_ \ \n"
  " | |____| | | | (_| | | | (_| | (__| ||  __/ |    | |____| | (_| \__ \ | | |\n"
  "  \_____|_| |_|\__,_|_|  \__,_|\___|\__\___|_|     \_____|_|\__,_|___/_| |_|"))
-    title_label.pack()
+    title_label.place(relx=0.5, rely=0.3, anchor="center")
 
-    main_menu_label = tk.Label(window, text = "1.) Shop, 2.) Player Info, 3.) Credits, 4.) Game Info, 5.) Get More Stats And Equipment (remove before releasing)")
-    main_menu_label.pack()
+    main_menu_label = tk.Label(window, text = "1.) Shop, 2.) Player Info, 3.) Credits, 4.) Game Info")
+    main_menu_label.place(relx=0.5, rely=0.5, anchor="center")
 
     main_menu_entry = tk.Entry(window)
-    main_menu_entry.pack()
+    main_menu_entry.place(relx=0.5, rely=0.6, anchor="center")
     
             
     main_menu_entry.bind("<Return>", main_menu_handle_input)
